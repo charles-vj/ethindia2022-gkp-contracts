@@ -6,11 +6,14 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "./Interfaces/IGatekeeper.sol";
 
 contract RentedKey is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
     using Counters for Counters.Counter;
 
     Counters.Counter private _tokenIdCounter;
+
+    address public gateKeeperAddress;
 
     uint256 totalKeys;
     uint256 globalKey;
@@ -46,6 +49,8 @@ contract RentedKey is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
+        IGatekeeper(gateKeeperAddress).updateUserData(globalKey, tokenId, to);
+        totalKeys += 1;
     }
 
     function _burn(uint256 tokenId)
@@ -73,8 +78,8 @@ contract RentedKey is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
         return super.supportsInterface(interfaceId);
     }
 
-    function rent(address _tenant, uint256 _interval) external onlyLessor {
-        require(tenantAddress == address(0));
+    function rent(address _tenant, uint256 _interval) external {
+        require(tenantAddress == address(0) || block.timestamp > deadline);
         tenantAddress = _tenant;
         deadline = block.timestamp + _interval;
     }
@@ -82,4 +87,6 @@ contract RentedKey is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
     function terminateRental() external onlyLessor {
         tenantAddress = address(0);
     }
+
+    function list() external onlyLessor {}
 }

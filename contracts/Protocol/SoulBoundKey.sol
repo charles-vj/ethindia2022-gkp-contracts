@@ -31,6 +31,8 @@ contract SoulBoundKey is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
+        IGatekeeper(gateKeeperAddress).updateUserData(globalKey, tokenId, to);
+        totalKeys += 1;
     }
 
     function _burn(uint256 tokenId)
