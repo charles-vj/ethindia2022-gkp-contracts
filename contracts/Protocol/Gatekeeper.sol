@@ -2,7 +2,9 @@
 pragma solidity 0.8.11;
 
 import "./SoulBoundKey.sol";
+import "./Interfaces/ISoulBoundKey.sol";
 import "./RentedKey.sol";
+import "./Interfaces/IRentedKey.sol";
 
 contract Gatekeeper {
     address public admin;
@@ -56,10 +58,15 @@ contract Gatekeeper {
         idToNormalGate[_id].whitelistedAccounts[msg.sender] = true;
     }
 
-    function createSoulBoundGate(uint256 _totalKeys) public {
+    function createSoulBoundGate(
+        uint256 _totalKeys,
+        string memory _name,
+        string memory _symbol
+    ) public {
         address newSoulBoundKey = address(
-            new SoulBoundKey(globalId, _totalKeys)
+            new SoulBoundKey(globalId, _totalKeys, _name, _symbol)
         );
+        ISoulBoundKey(newSoulBoundKey).setGatekeeperAddress(address(this));
         idToSoulBoundKey[globalId] = newSoulBoundKey;
         globalId = globalId + 1;
     }
@@ -72,6 +79,7 @@ contract Gatekeeper {
         address newRentedKey = address(
             new RentedKey(globalId, _totalKeys, _name, _symbol)
         );
+        IRentedKey(newRentedKey).setGatekeeperAddress(address(this));
         idToRentedKey[globalId] = newRentedKey;
         globalId = globalId + 1;
     }

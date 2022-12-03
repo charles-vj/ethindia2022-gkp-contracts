@@ -16,9 +16,12 @@ contract SoulBoundKey is ERC721, Ownable {
     uint256 public totalKeys;
     uint256 public globalKey;
 
-    constructor(uint256 _globalKey, uint256 _totalKeys)
-        ERC721("SoulBoundKey", "SBK")
-    {
+    constructor(
+        uint256 _globalKey,
+        uint256 _totalKeys,
+        string memory _name,
+        string memory _symbol
+    ) ERC721(_name, _symbol) {
         globalKey = _globalKey;
         totalKeys = _totalKeys;
     }
@@ -37,7 +40,6 @@ contract SoulBoundKey is ERC721, Ownable {
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);
         IGatekeeper(gateKeeperAddress).updateUserData(globalKey, tokenId, to);
-        totalKeys += 1;
     }
 
     function _beforeTokenTransfer(

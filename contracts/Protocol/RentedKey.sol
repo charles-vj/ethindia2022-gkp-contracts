@@ -21,8 +21,6 @@ contract RentedKey is ERC721, Ownable {
     mapping(uint256 => address) public lessors;
     mapping(uint256 => uint256) public deadlines;
 
-    uint256 public deadline;
-
     constructor(
         uint256 _globalKey,
         uint256 _totalKeys,
@@ -33,14 +31,14 @@ contract RentedKey is ERC721, Ownable {
         totalKeys = _totalKeys;
     }
 
-    function setGatekeeperAddress(address _gatekeeperAddress) public {
-        require(gateKeeperAddress == address(0));
-        gateKeeperAddress = _gatekeeperAddress;
-    }
-
     modifier onlyLessor(uint256 _tokenId) {
         require(msg.sender == lessors[_tokenId], "Only Lessor");
         _;
+    }
+
+    function setGatekeeperAddress(address _gatekeeperAddress) public {
+        require(gateKeeperAddress == address(0));
+        gateKeeperAddress = _gatekeeperAddress;
     }
 
     function safeMint(address to) public {
@@ -53,7 +51,6 @@ contract RentedKey is ERC721, Ownable {
         _safeMint(to, tokenId);
         lessors[tokenId] = to;
         IGatekeeper(gateKeeperAddress).updateUserData(globalKey, tokenId, to);
-        totalKeys += 1;
     }
 
     function rent(
@@ -61,7 +58,10 @@ contract RentedKey is ERC721, Ownable {
         uint256 _tokenId,
         uint256 _interval
     ) external {
-        require(tenants[_tokenId] == address(0) || block.timestamp > deadline);
+        require(
+            tenants[_tokenId] == address(0) ||
+                block.timestamp > deadlines[_tokenId]
+        );
         tenants[_tokenId] = _tenant;
         deadlines[_tokenId] = block.timestamp + _interval;
     }
