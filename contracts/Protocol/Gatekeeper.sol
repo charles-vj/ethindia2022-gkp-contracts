@@ -70,7 +70,7 @@ contract Gatekeeper {
         string memory _symbol
     ) public {
         address newRentedKey = address(
-            new RentedKey(globalId, _totalKeys, _name, _symbol, msg.sender)
+            new RentedKey(globalId, _totalKeys, _name, _symbol)
         );
         idToRentedKey[globalId] = newRentedKey;
         globalId = globalId + 1;
