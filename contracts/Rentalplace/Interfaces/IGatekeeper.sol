@@ -3,6 +3,13 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 interface IGatekeeper {
+    struct DropIdTokenIdPair {
+        uint256 dropId;
+        uint256 tokenId;
+    }
+
+    function fetchKeyAddress(uint256 _tokenId) external returns (address);
+
     function admin() external view returns (address);
 
     function createNormalGate(string memory _name, address _owner) external;

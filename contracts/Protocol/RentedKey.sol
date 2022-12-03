@@ -15,13 +15,15 @@ contract RentedKey is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
 
     address public gateKeeperAddress;
 
-    uint256 totalKeys;
-    uint256 globalKey;
+    uint256 public totalKeys;
+    uint256 public globalKey;
 
-    address public tenantAddress;
-    address public lessorAddress;
+    // TODO : Squash 3 mappings into one mapping with struct
+    mapping(uint256 => address) public tenants;
+    mapping(uint256 => address) public lessors;
+    mapping(uint256 => uint256) public deadlines;
 
-    uint256 deadline;
+    uint256 public deadline;
 
     constructor(
         uint256 _globalKey,
@@ -32,15 +34,19 @@ contract RentedKey is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
     ) ERC721(_name, _symbol) {
         globalKey = _globalKey;
         totalKeys = _totalKeys;
-        lessorAddress = _lessorAddress;
     }
 
-    modifier onlyLessor() {
-        require(msg.sender == lessorAddress, "Only Lessor");
+    function setGatekeeperAddress(address _gatekeeperAddress) public {
+        require(gateKeeperAddress == address(0));
+        gateKeeperAddress = _gatekeeperAddress;
+    }
+
+    modifier onlyLessor(uint256 _tokenId) {
+        require(msg.sender == lessors[_tokenId], "Only Lessor");
         _;
     }
 
-    function safeMint(address to, string memory uri) public onlyOwner {
+    function safeMint(address to, string memory uri) public {
         if (totalKeys != 0) {
             uint256 current = _tokenIdCounter.current();
             require(current < totalKeys, "Total Limit Exceeded");
@@ -49,6 +55,7 @@ contract RentedKey is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
+        lessors[tokenId] = to;
         IGatekeeper(gateKeeperAddress).updateUserData(globalKey, tokenId, to);
         totalKeys += 1;
     }
@@ -78,15 +85,27 @@ contract RentedKey is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
         return super.supportsInterface(interfaceId);
     }
 
-    function rent(address _tenant, uint256 _interval) external {
-        require(tenantAddress == address(0) || block.timestamp > deadline);
-        tenantAddress = _tenant;
-        deadline = block.timestamp + _interval;
+    function rent(
+        address _tenant,
+        uint256 _tokenId,
+        uint256 _interval
+    ) external {
+        require(tenants[_tokenId] == address(0) || block.timestamp > deadline);
+        tenants[_tokenId] = _tenant;
+        deadlines[_tokenId] = block.timestamp + _interval;
     }
 
-    function terminateRental() external onlyLessor {
-        tenantAddress = address(0);
+    function terminateRental(uint256 _tokenId) external onlyLessor(_tokenId) {
+        require(tenants[_tokenId] != address(0));
+        tenants[_tokenId] = address(0);
+        deadlines[_tokenId] = block.timestamp;
     }
 
-    function list() external onlyLessor {}
+    // function list() external onlyLessor {
+
+    // }
+
+    function fetchLessor(uint256 _tokenId) external returns (address) {
+        return lessors[_tokenId];
+    }
 }

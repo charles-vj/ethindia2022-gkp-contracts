@@ -7,7 +7,7 @@ import "./RentedKey.sol";
 contract Gatekeeper {
     address public admin;
 
-    uint256 globalId = 0;
+    uint256 public globalId = 0;
 
     struct NormalGate {
         uint256 id;
@@ -15,21 +15,21 @@ contract Gatekeeper {
         string name;
         mapping(address => bool) whitelistedAccounts;
     }
-    mapping(uint256 => NormalGate) idToNormalGate;
+    mapping(uint256 => NormalGate) public idToNormalGate;
 
-    address soulBoundKeyTemplate;
-    mapping(uint256 => address) idToSoulBoundKey;
+    address public soulBoundKeyTemplate;
+    mapping(uint256 => address) public idToSoulBoundKey;
 
-    address rentedKeyTemplate;
-    mapping(uint256 => address) idToRentedKey;
+    address public rentedKeyTemplate;
+    mapping(uint256 => address) public idToRentedKey;
 
     // USER DATA
     struct DropIdTokenIdPair {
         uint256 dropId;
         uint256 tokenId;
     }
-    mapping(address => DropIdTokenIdPair[]) userTokens;
-    mapping(address => DropIdTokenIdPair[]) tenants;
+    mapping(address => DropIdTokenIdPair[]) public userTokens;
+    mapping(address => DropIdTokenIdPair[]) public tenants;
 
     constructor() public {
         admin = msg.sender;
@@ -95,5 +95,9 @@ contract Gatekeeper {
                 msg.sender == idToSoulBoundKey[_gateId]
         );
         userTokens[_user].push(DropIdTokenIdPair(_gateId, _tokenId));
+    }
+
+    function fetchKeyAddress(uint256 _tokenId) external returns (address) {
+        return idToRentedKey[_tokenId];
     }
 }
