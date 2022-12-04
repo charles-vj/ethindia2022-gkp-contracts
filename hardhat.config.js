@@ -35,4 +35,9 @@ module.exports = {
       accounts,
     },
   },
+  etherscan: {
+    apiKey: {
+      polygonMumbai: process.env.ETHERSCAN,
+    },
+  },
 }
