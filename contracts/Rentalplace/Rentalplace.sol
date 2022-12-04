@@ -50,6 +50,12 @@ contract Rentalplace {
         );
         IRentedKey(rentedKeyAddress).rent(msg.sender, _pair.tokenId, _interval);
 
-        for (uint256 i = 0; i < listedItems.length; i++) {}
+        for (uint256 i = 0; i < listedItems.length; i++) {
+            if(listedItems[i].dropId == _pair.dropId && listedItems[i].tokenId == _pair.tokenId) {
+                listedItems[i].dropId = listedItems[listedItems.length - 1].dropId;
+                listedItems[i].tokenId = listedItems[listedItems.length - 1].tokenId;
+                listedItems.
+            }
+        }
     }
 }
