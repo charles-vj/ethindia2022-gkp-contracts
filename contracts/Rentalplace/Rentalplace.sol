@@ -7,6 +7,16 @@ contract Rentalplace {
     address public gatekeeper;
     IGatekeeper.DropIdTokenIdPair[] public listedItems;
 
+    struct Listing {
+        // The ID of the listing
+        uint256 id;
+        // The address of the seller
+        address seller;
+    }
+
+    mapping(uint256 => Listing) listings;
+    uint256 nextId = 0;
+
     modifier onlyRentedKey(uint256 _globalId) {
         require(
             msg.sender == IGatekeeper(gatekeeper).fetchKeyAddress(_globalId)
@@ -29,5 +39,17 @@ contract Rentalplace {
             tx.origin == IRentedKey(rentedKeyAddress).fetchLessor(_pair.tokenId)
         );
         listedItems.push(_pair);
+        listings[nextId] = Listing(nextId, tx.origin);
+    }
+
+    function rent(IGatekeeper.DropIdTokenIdPair memory _pair, uint256 _interval)
+        public
+    {
+        address rentedKeyAddress = IGatekeeper(gatekeeper).fetchKeyAddress(
+            _pair.dropId
+        );
+        IRentedKey(rentedKeyAddress).rent(msg.sender, _pair.tokenId, _interval);
+
+        for (uint256 i = 0; i < listedItems.length; i++) {}
     }
 }

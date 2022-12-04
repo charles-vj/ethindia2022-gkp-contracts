@@ -32,6 +32,11 @@ contract Gatekeeper {
     }
     mapping(address => DropIdTokenIdPair[]) public userTokens;
     mapping(address => DropIdTokenIdPair[]) public tenants;
+    mapping(address => uint256) public userSbkDropLength;
+    mapping(address => uint256[]) public userSbkDrops;
+    mapping(address => uint256) public userRkDropLength;
+    mapping(address => uint256[]) public userRkDrops;
+    mapping(address => uint256) public userNftLength;
 
     constructor() public {
         admin = msg.sender;
@@ -58,30 +63,40 @@ contract Gatekeeper {
         idToNormalGate[_id].whitelistedAccounts[msg.sender] = true;
     }
 
+    function fetchWhitelistedContracts(uint256 _id) public view returns (bool) {
+        return idToNormalGate[_id].whitelistedAccounts[msg.sender];
+    }
+
     function createSoulBoundGate(
         uint256 _totalKeys,
         string memory _name,
         string memory _symbol
-    ) public {
+    ) public returns (address) {
         address newSoulBoundKey = address(
             new SoulBoundKey(globalId, _totalKeys, _name, _symbol)
         );
         ISoulBoundKey(newSoulBoundKey).setGatekeeperAddress(address(this));
         idToSoulBoundKey[globalId] = newSoulBoundKey;
+        userSbkDrops[msg.sender].push(globalId);
+        userSbkDropLength[msg.sender] += 1;
         globalId = globalId + 1;
+        return newSoulBoundKey;
     }
 
     function createRentedGate(
         uint256 _totalKeys,
         string memory _name,
         string memory _symbol
-    ) public {
+    ) public returns (address) {
         address newRentedKey = address(
             new RentedKey(globalId, _totalKeys, _name, _symbol)
         );
         IRentedKey(newRentedKey).setGatekeeperAddress(address(this));
         idToRentedKey[globalId] = newRentedKey;
+        userRkDrops[msg.sender].push(globalId);
+        userSbkDropLength[msg.sender] += 1;
         globalId = globalId + 1;
+        return newRentedKey;
     }
 
     function updateTenantData(
@@ -103,6 +118,7 @@ contract Gatekeeper {
                 msg.sender == idToSoulBoundKey[_gateId]
         );
         userTokens[_user].push(DropIdTokenIdPair(_gateId, _tokenId));
+        userNftLength[_user] += 1;
     }
 
     function fetchKeyAddress(uint256 _tokenId) external returns (address) {
