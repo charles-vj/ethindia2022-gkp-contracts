@@ -23,21 +23,31 @@ module.exports = {
     ],
   },
   networks: {
-    hardhat: {},
+    hardhat: {
+      forking: {
+        url: `${process.env.INFURA_KEY}`,
+        // url: "https://rpc.ankr.com/polygon",
+      },
+    },
     mumbai: {
       url: 'https://matic-mumbai.chainstacklabs.com',
       chainId: 80001,
       accounts,
     },
     polygon: {
-      url: 'https://rpc.ankr.com/polygon',
+      url: process.env.INFURA_KEY,
       chainId: 137,
+      accounts,
+    },
+    goerli: {
+      url: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161	',
+      chainId: 5,
       accounts,
     },
   },
   etherscan: {
     apiKey: {
-      polygonMumbai: process.env.ETHERSCAN,
+      mumbai: process.env.ETHERSCAN,
     },
   },
 }
