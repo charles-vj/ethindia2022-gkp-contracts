@@ -64,12 +64,22 @@ contract RentedKey is ERC721, Ownable {
         );
         tenants[_tokenId] = _tenant;
         deadlines[_tokenId] = block.timestamp + _interval;
+        IGatekeeper(gateKeeperAddress).updateTenantData(
+            globalKey,
+            _tokenId,
+            _tenant
+        );
     }
 
     function terminateRental(uint256 _tokenId) external onlyLessor(_tokenId) {
         require(tenants[_tokenId] != address(0));
         tenants[_tokenId] = address(0);
         deadlines[_tokenId] = block.timestamp;
+        IGatekeeper(gateKeeperAddress).updateTenantData(
+            globalKey,
+            _tokenId,
+            address(0)
+        );
     }
 
     function fetchLessor(uint256 _tokenId) external returns (address) {
